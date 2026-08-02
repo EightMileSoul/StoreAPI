@@ -50,6 +50,8 @@ public class ProductsController : ControllerBase
         };
 
         var createdProduct = await _service.CreateAsync(product);
+        if (createdProduct == null)
+            return BadRequest("Указанная категория не существует");
 
         return Created(
             $"/api/products/{createdProduct.Id}",
@@ -57,7 +59,9 @@ public class ProductsController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, UpdateProductDto dto)
+    public async Task<IActionResult> Update(
+    int id,
+    UpdateProductDto dto)
     {
         var product = new Product
         {
@@ -66,10 +70,21 @@ public class ProductsController : ControllerBase
             CategoryId = dto.CategoryId
         };
 
-        if (!await _service.UpdateAsync(id, product))
-            return NotFound("Товар не найден");
+        var result = await _service.UpdateAsync(id, product);
 
-        return NoContent();
+        return result switch
+        {
+            UpdateProductResult.ProductNotFound =>
+                NotFound("Товар не найден"),
+
+            UpdateProductResult.CategoryNotFound =>
+                BadRequest("Указанная категория не существует"),
+
+            UpdateProductResult.Success =>
+                NoContent(),
+
+            _ => StatusCode(500)
+        };
     }
 
     [HttpDelete("{id}")]
@@ -82,14 +97,15 @@ public class ProductsController : ControllerBase
     }
 
     private static ProductResponseDto ToResponseDto(Product product)
-{
-    return new ProductResponseDto
     {
-        Id = product.Id,
-        Name = product.Name,
-        Price = product.Price,
-        CategoryId = product.CategoryId,
-        CategoryName = product.Category?.Name
-    };
-}
+        return new ProductResponseDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Price = product.Price,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category?.Name
+        };
+    }
+
 }

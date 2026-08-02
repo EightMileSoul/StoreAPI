@@ -28,20 +28,38 @@ public class ProductService
         .FirstOrDefaultAsync(product => product.Id == id);
     }
 
-    public async Task<Product> CreateAsync(Product product)
+    public async Task<Product?> CreateAsync(Product product)
     {
+        if (product.CategoryId.HasValue)
+        {
+            var categoryExists = await _context.Categories
+                .AnyAsync(category => category.Id == product.CategoryId.Value);
+
+            if (!categoryExists)
+                return null;
+        }
+
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
 
         return product;
     }
-
-    public async Task<bool> UpdateAsync(int id, Product updatedProduct)
+    public async Task<UpdateProductResult> UpdateAsync(int id, Product updatedProduct)
     {
-        var product = await GetByIdAsync(id);
+        var product = await _context.Products.FindAsync(id);
 
         if (product == null)
-            return false;
+            return UpdateProductResult.ProductNotFound;
+
+        if (updatedProduct.CategoryId.HasValue)
+        {
+            var categoryExists = await _context.Categories
+                .AnyAsync(category =>
+                    category.Id == updatedProduct.CategoryId.Value);
+
+            if (!categoryExists)
+                return UpdateProductResult.CategoryNotFound;
+        }
 
         product.Name = updatedProduct.Name;
         product.Price = updatedProduct.Price;
@@ -49,7 +67,7 @@ public class ProductService
 
         await _context.SaveChangesAsync();
 
-        return true;
+        return UpdateProductResult.Success;
     }
 
     public async Task<bool> DeleteAsync(int id)
