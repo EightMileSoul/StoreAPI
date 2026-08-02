@@ -32,11 +32,13 @@ public class ProductService
     {
         if (product.CategoryId.HasValue)
         {
-            var categoryExists = await _context.Categories
-                .AnyAsync(category => category.Id == product.CategoryId.Value);
+            var category = await _context.Categories
+                .FindAsync(product.CategoryId.Value);
 
-            if (!categoryExists)
+            if (category == null)
                 return null;
+
+            product.Category = category;
         }
 
         _context.Products.Add(product);
