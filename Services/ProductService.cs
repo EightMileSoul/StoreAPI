@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using StoreApi.Data;
 using StoreApi.Models;
 
+
 namespace StoreApi.Services;
 
 public class ProductService
@@ -15,13 +16,16 @@ public class ProductService
 
     public async Task<List<Product>> GetAllAsync()
     {
-        return await _context.Products.ToListAsync();
+        return await _context.Products
+        .Include(product => product.Category)
+        .ToListAsync();
     }
 
     public async Task<Product?> GetByIdAsync(int id)
     {
         return await _context.Products
-            .FirstOrDefaultAsync(p => p.Id == id);
+        .Include(product => product.Category)
+        .FirstOrDefaultAsync(product => product.Id == id);
     }
 
     public async Task<Product> CreateAsync(Product product)
@@ -41,6 +45,7 @@ public class ProductService
 
         product.Name = updatedProduct.Name;
         product.Price = updatedProduct.Price;
+        product.CategoryId = updatedProduct.CategoryId;
 
         await _context.SaveChangesAsync();
 

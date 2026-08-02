@@ -45,7 +45,8 @@ public class ProductsController : ControllerBase
         var product = new Product
         {
             Name = dto.Name,
-            Price = dto.Price
+            Price = dto.Price,
+            CategoryId = dto.CategoryId
         };
 
         var createdProduct = await _service.CreateAsync(product);
@@ -61,7 +62,8 @@ public class ProductsController : ControllerBase
         var product = new Product
         {
             Name = dto.Name,
-            Price = dto.Price
+            Price = dto.Price,
+            CategoryId = dto.CategoryId
         };
 
         if (!await _service.UpdateAsync(id, product))
@@ -80,12 +82,14 @@ public class ProductsController : ControllerBase
     }
 
     private static ProductResponseDto ToResponseDto(Product product)
+{
+    return new ProductResponseDto
     {
-        return new ProductResponseDto
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Price = product.Price
-        };
-    }
+        Id = product.Id,
+        Name = product.Name,
+        Price = product.Price,
+        CategoryId = product.CategoryId,
+        CategoryName = product.Category?.Name
+    };
+}
 }

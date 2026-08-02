@@ -16,4 +16,5 @@ public class UpdateProductDto
         100000000,
         ErrorMessage = "Цена должна быть больше нуля.")]
     public decimal Price { get; set; }
+    public int? CategoryId { get; set; }
 }
