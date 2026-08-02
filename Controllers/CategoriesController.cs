@@ -57,10 +57,21 @@ public class CategoriesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _service.DeleteAsync(id))
-            return NotFound("Категория не найдена");
+        var result = await _service.DeleteAsync(id);
 
-        return NoContent();
+        return result switch
+        {
+            DeleteCategoryResult.CategoryNotFound =>
+                NotFound("Категория не найдена"),
+
+            DeleteCategoryResult.CategoryInUse =>
+                Conflict("Нельзя удалить категорию, пока к ней привязаны товары"),
+
+            DeleteCategoryResult.Success =>
+                NoContent(),
+
+            _ => StatusCode(500)
+        };
     }
 
     private static CategoryResponseDto ToResponseDto(Category category)

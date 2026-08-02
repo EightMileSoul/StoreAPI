@@ -27,16 +27,22 @@ public class CategoryService
 
         return category;
     }
-    public async Task<bool> DeleteAsync(int id)
-    {
-        var category = await GetByIdAsync(id);
+    public async Task<DeleteCategoryResult> DeleteAsync(int id)
+{
+    var category = await _context.Categories.FindAsync(id);
 
-        if (category == null)
-            return false;
+    if (category == null)
+        return DeleteCategoryResult.CategoryNotFound;
 
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
+    var categoryInUse = await _context.Products
+        .AnyAsync(product => product.CategoryId == id);
 
-        return true;
-    }
+    if (categoryInUse)
+        return DeleteCategoryResult.CategoryInUse;
+
+    _context.Categories.Remove(category);
+    await _context.SaveChangesAsync();
+
+    return DeleteCategoryResult.Success;
+}
 }
