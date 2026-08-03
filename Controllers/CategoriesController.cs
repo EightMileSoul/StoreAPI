@@ -49,8 +49,9 @@ public class CategoriesController : ControllerBase
 
         var createdCategory = await _service.CreateAsync(category);
 
-        return Created(
-            $"/api/categories/{createdCategory.Id}",
+        return CreatedAtAction(
+            nameof(GetCategory),
+            new { id = createdCategory.Id },
             ToResponseDto(createdCategory));
     }
 

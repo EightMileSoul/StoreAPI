@@ -53,8 +53,9 @@ public class ProductsController : ControllerBase
         if (createdProduct == null)
             return BadRequest("Указанная категория не существует");
 
-        return Created(
-            $"/api/products/{createdProduct.Id}",
+        return CreatedAtAction(
+            nameof(GetProduct),
+            new { id = createdProduct.Id },
             ToResponseDto(createdProduct));
     }
 
