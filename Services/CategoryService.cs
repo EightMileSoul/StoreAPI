@@ -3,6 +3,7 @@ using StoreApi.Data;
 using StoreApi.Models;
 
 namespace StoreApi.Services;
+
 public class CategoryService
 {
     private readonly AppDbContext _context;
@@ -22,27 +23,41 @@ public class CategoryService
     }
     public async Task<Category> CreateAsync(Category category)
     {
-         _context.Categories.Add(category);
+        _context.Categories.Add(category);
         await _context.SaveChangesAsync();
 
         return category;
     }
     public async Task<DeleteCategoryResult> DeleteAsync(int id)
-{
-    var category = await _context.Categories.FindAsync(id);
+    {
+        var category = await _context.Categories.FindAsync(id);
 
-    if (category == null)
-        return DeleteCategoryResult.CategoryNotFound;
+        if (category == null)
+            return DeleteCategoryResult.CategoryNotFound;
 
-    var categoryInUse = await _context.Products
-        .AnyAsync(product => product.CategoryId == id);
+        var categoryInUse = await _context.Products
+            .AnyAsync(product => product.CategoryId == id);
 
-    if (categoryInUse)
-        return DeleteCategoryResult.CategoryInUse;
+        if (categoryInUse)
+            return DeleteCategoryResult.CategoryInUse;
 
-    _context.Categories.Remove(category);
-    await _context.SaveChangesAsync();
+        _context.Categories.Remove(category);
+        await _context.SaveChangesAsync();
 
-    return DeleteCategoryResult.Success;
-}
+        return DeleteCategoryResult.Success;
+    }
+
+    public async Task<bool> UpdateAsync(int id, Category updatedCategory)
+    {
+        var category = await _context.Categories.FindAsync(id);
+
+        if (category == null)
+            return false;
+
+        category.Name = updatedCategory.Name;
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
 }

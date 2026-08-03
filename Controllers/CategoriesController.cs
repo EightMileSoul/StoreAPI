@@ -82,4 +82,18 @@ public class CategoriesController : ControllerBase
             Name = category.Name
         };
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, UpdateCategoryDto dto)
+    {
+        var category = new Category
+        {
+            Name = dto.Name
+        };
+
+        if (!await _service.UpdateAsync(id, category))
+            return NotFound("Категория не найдена");
+
+        return NoContent();
+    }
 }
